@@ -8,5 +8,5 @@ spec:
   type: oci
   url: oci://host.minikube.internal:5000/charts
   insecure: true
-  secretRef:
-    name: habor-creds
+  # secretRef:
+  #   name: habor-creds

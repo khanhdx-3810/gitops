@@ -16,8 +16,8 @@ spec:
           paths:
             - path: /
               pathType: Prefix
-    imagePullSecrets:
-      - name: habor-creds
+    # imagePullSecrets:
+    #   - name: habor-creds
     resources:
       requests:
         cpu: 50m
