@@ -1,0 +1,36 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: demo-api
+spec:
+  interval: 10m
+  timeout: 5m
+
+  chart:
+    spec:
+      chart: demo-api
+      version: "0.2.0"
+      sourceRef:
+        kind: HelmRepository
+        name: harbor
+        namespace: flux-system
+      interval: 5m
+
+  install:
+    remediation:
+      retries: 3
+    createNamespace: false
+
+  upgrade:
+    remediation:
+      retries: 3
+      remediateLastFailure: true
+    cleanupOnFail: true
+
+  driftDetection:
+    mode: enabled
+
+  values:
+    replicaCount: 1
+    config:
+      PODINFO_UI_MESSAGE: "base - gia tri mac dinh"

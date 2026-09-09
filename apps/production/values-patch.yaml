@@ -1,0 +1,26 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: demo-api
+spec:
+  values:
+    replicaCount: 2
+    config:
+      PODINFO_UI_MESSAGE: "PRODUCTION - deploy bang FluxCD"
+      PODINFO_UI_COLOR: "#dc3545"
+    ingress:
+      enabled: true
+      className: nginx
+      hosts:
+        - host: demo-api.production.local
+          paths:
+            - path: /
+              pathType: Prefix
+    imagePullSecrets:
+      - name: habor-creds
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
