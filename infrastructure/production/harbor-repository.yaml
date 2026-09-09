@@ -1,12 +1,12 @@
----
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: harbor
   namespace: flux-system
 spec:
-  interval: 10m0s
+  interval: 10m
+  type: oci
+  url: oci://host.minikube.internal:5000/charts
+  insecure: true
   secretRef:
     name: habor-creds
-  type: oci
-  url: oci://localhost:5000/charts
