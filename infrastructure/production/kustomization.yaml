@@ -4,3 +4,4 @@ resources:
   - namespace.yaml
   - harbor-repository.yaml
   - image-repository.yaml
+  - image-policy.yaml
