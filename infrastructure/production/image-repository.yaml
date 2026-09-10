@@ -7,3 +7,4 @@ metadata:
 spec:
   image: host.minikube.internal:5000/charts/web-api
   interval: 5m0s
+  insecure: true
