@@ -5,3 +5,4 @@ resources:
   - harbor-repository.yaml
   - image-repository.yaml
   - image-policy.yaml
+  - image-update.yaml
