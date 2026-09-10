@@ -12,7 +12,7 @@ spec:
       enabled: true
       className: nginx
       hosts:
-        - host: demo-api.production.local
+        - host: demo-api.staging.local
           paths:
             - path: /
               pathType: Prefix
