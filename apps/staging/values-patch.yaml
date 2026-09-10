@@ -6,7 +6,7 @@ spec:
   values:
     image:
       repository: host.minikube.internal:5000/charts/web-api # charts but this is the image
-      tag: "1.4.6"
+      tag: "1.4.6" # {"$imagepolicy": "flux-system:web-api-staging:tag"}
     replicaCount: 2
     config:
       PODINFO_UI_MESSAGE: "STAGING - deploy bang FluxCD"

@@ -20,3 +20,11 @@ Ca hai dung cung mot tai khoan: robot$rnd+flux (chi co quyen Pull).
       --docker-server=harbor.dangxuankhanh.io.vn \
       --docker-username='robot$rnd+flux' \
       --docker-password="$FLUX_TOKEN"
+
+## Command
+
+    flux reconcile image repository web-api            # quét Harbor ngay
+
+    flux reconcile image update web-api-production     # kiểm tra và commit ngay
+
+    flux reconcile source git flux-system              # kéo repo về ngay
