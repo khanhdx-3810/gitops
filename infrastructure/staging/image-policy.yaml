@@ -2,14 +2,11 @@
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
-  name: web-api-production
+  name: web-api-staging
   namespace: flux-system
 spec:
   imageRepositoryRef:
     name: web-api
-  filterTags:
-    pattern: '^v?(?P<version>[0-9]+\.[0-9]+\.[0-9]+)$'
-    extract: '$version'
   policy:
     semver:
       range: '>=0.0.0-0'
