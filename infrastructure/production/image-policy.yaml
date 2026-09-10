@@ -5,7 +5,6 @@ metadata:
   name: web-api-production
   namespace: flux-system
 spec:
-  spec:
   imageRepositoryRef:
     name: web-api
   filterTags:
