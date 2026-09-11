@@ -8,7 +8,7 @@ spec:
   git:
     checkout:
       ref:
-        branch: flux-image-updates
+        branch: main
     commit:
       author:
         email: fluxcdbot@users.noreply.github.com
@@ -16,7 +16,7 @@ spec:
       messageTemplate: '{{range .Changed.Changes}}{{print .OldValue}} -> {{println
         .NewValue}}{{end}}'
     push:
-      branch: main
+      branch: flux-image-updates
   interval: 5m0s
   sourceRef:
     kind: GitRepository
