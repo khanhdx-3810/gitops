@@ -6,3 +6,4 @@ resources:
   - notification-alert.yaml
   - notification-provider.yaml
   - slack-webhook.enc.yaml
+  - harbor-creds.enc.yaml

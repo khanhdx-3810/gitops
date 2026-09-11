@@ -4,4 +4,3 @@ resources:
   - namespace.yaml
   - image-policy.yaml
   - image-update.yaml
-  - harbor-creds.enc.yaml
