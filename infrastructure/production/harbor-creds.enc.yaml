@@ -1,0 +1,28 @@
+apiVersion: v1
+data:
+    .dockerconfigjson: ENC[AES256_GCM,data:qE0YI/gUgcNpxulq/EhUf/nlv83fzpIloDB+HrVti6T7x5CDAc7kuvpQIiBsCXBob+LXhCvGUN4QuB5Niwaixet9Z4jPtBDcRCj2kVKngOyK212QrVqdzM5XK/toPAEKyqC/2A==,iv:mbGxseyC20xr8gVJBXQYXFcpwfzS0ME5UmiGt7IgqxU=,tag:W/IlcwGPynCK3/hJ8H4EGw==,type:str]
+kind: Secret
+metadata:
+    name: harbor-creds
+    namespace: flux-system
+type: kubernetes.io/dockerconfigjson
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1ml87v52sj3sfqw9um5ywmu6cxlymv6n9nx4laqtlaxmny0j70y7qcvw3mn
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAzbTBsalk5QWVCcU11WWRm
+            SVA2SndGWmdpRUk3emFkMTNEeVBScVpGb1VvCnAzVXV5cmM5MXBGZ3dIdlhMZDJ2
+            WXpYUzlIUHVZR2MwMmtvZ01LS1RJNDQKLS0tIHZTMDc2bEVENkRTMVU0YVlwb21E
+            SENWVmJWakpZdytxVkxOV0MweXZlY1kKg9t4tiku1Y/gGS/6sdoZ+yIFp3lLnGW+
+            xhsco2KoXouBTs8bYAr8/P43uWhniB7hI5QJZ3fsUwZyR0MJrMdE7w==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-09-11T09:20:56Z"
+    mac: ENC[AES256_GCM,data:2TlOrQm6DloRYUGMQdWvUEqwznJhmNAVr3onznVyMnDgWvDjR59CEIIvXiUngn+03F1bz2+4NUV3nqZ48b5EM+OTKozxhEncJPJ2w9BQPvAqHFm2IRHFXXl2sfMviqiKghaoAqwzrK9PLKwPSWMgHJj3SL6UIm6+RSnc0WBNq1E=,iv:o0wBbV0EqWyUZkLL1I+9SBFH2M6lpOU1bYnWXgZgFU4=,tag:rPsKomZN72AKsz8X4EmgIA==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData)$
+    version: 3.9.4

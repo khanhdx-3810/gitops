@@ -1,22 +1,12 @@
-# Secret tao TAY, chua nam trong Git
+# Secret tao TAY — chi con DUY NHAT mot cai
 
-Hai secret duoi day duoc tao bang kubectl, CHUA duoc quan ly boi GitOps.
-Se chuyen sang SOPS o Phan 6.
+## sops-age (namespace flux-system)
 
-Ca hai dung cung mot tai khoan: robot$rnd+flux (chi co quyen Pull).
+Chua private key age de Flux giai ma cac Secret trong Git.
+Private key backup trong password manager cua team.
 
-## 1. namespace flux-system — cho source-controller keo CHART (buoc 5)
+    kubectl create secret generic sops-age \
+      --namespace=flux-system \
+      --from-file=age.agekey=$HOME/.config/sops/age/keys.txt
 
-    kubectl create secret docker-registry harbor-creds \
-      --namespace flux-system \
-      --docker-server=harbor.dangxuankhanh.io.vn \
-      --docker-username='robot$rnd+flux' \
-      --docker-password="$FLUX_TOKEN"
-
-## 2. namespace production va staging — cho kubelet keo IMAGE (buoc 7)
-
-    kubectl create secret docker-registry harbor-creds \
-      --namespace production \
-      --docker-server=harbor.dangxuankhanh.io.vn \
-      --docker-username='robot$rnd+flux' \
-      --docker-password="$FLUX_TOKEN"
+Moi Secret khac deu nam trong Git duoi dang da ma hoa (*.enc.yaml).

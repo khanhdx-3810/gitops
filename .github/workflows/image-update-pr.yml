@@ -1,0 +1,26 @@
+# .github/workflows/image-update-pr.yml
+name: Mo PR cho image update
+
+on:
+  push:
+    branches: [flux-image-updates]
+
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tao PR neu chua co
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh pr view flux-image-updates --json number >/dev/null 2>&1; then
+            gh pr create \
+              --base main \
+              --head flux-image-updates \
+              --title "Cap nhat image tu dong" \
+              --body "PR do FluxCD tao. Xem diff de biet version nao thay doi."
+          fi
