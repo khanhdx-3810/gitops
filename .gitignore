@@ -1,0 +1,4 @@
+# File secret chua ma hoa — khong bao gio commit
+*.dec.yaml
+secret-*.yaml
+!*.enc.yaml

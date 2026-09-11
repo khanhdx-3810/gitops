@@ -5,3 +5,4 @@ resources:
   - image-policy.yaml
   - image-update.yaml
   - harbor-creds.enc.yaml
+  - notification-alert.yaml
