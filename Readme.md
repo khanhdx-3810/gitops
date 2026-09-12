@@ -135,7 +135,34 @@ kubectl describe helmrelease demo-api -n production
 kubectl get events -n production --sort-by=.lastTimestamp
 ```
 
-## 6. Ghi nhớ hành vi hay gây nhầm lẫn
+## 6. GitHub Actions — PR tự động cho image update
+
+`.github/workflows/image-update-pr.yml` chạy khi có push lên branch `flux-image-updates`
+(nhánh mà `ImageUpdateAutomation` push commit tới, xem mục 1), tự mở PR `flux-image-updates -> main`
+bằng `gh pr create` với `GITHUB_TOKEN` mặc định.
+
+**Gotcha:** dù workflow đã khai `permissions: pull-requests: write`, GitHub vẫn chặn với lỗi:
+```
+pull request create failed: GraphQL: GitHub Actions is not permitted to create or approve pull requests
+```
+vì có 1 công tắc riêng ở cấp **repo** (không nằm trong workflow yaml): Settings → Actions → General →
+Workflow permissions → "Allow GitHub Actions to create and approve pull requests" — mặc định **tắt**.
+Bật bằng CLI (repo cá nhân, chỉ 1 workflow dùng quyền này nên an toàn để bật):
+
+```bash
+gh api -X PUT repos/khanhdx-3810/gitops/actions/permissions/workflow \
+  -f default_workflow_permissions=read \
+  -F can_approve_pull_request_reviews=true
+
+# verify
+gh api repos/khanhdx-3810/gitops/actions/permissions/workflow
+# → {"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}
+```
+
+Test lại không cần đợi image mới: `gh run rerun <run-id>` (lấy run-id từ `gh run list`), hoặc push nhẹ
+1 commit lên `flux-image-updates`.
+
+## 7. Ghi nhớ hành vi hay gây nhầm lẫn
 
 - `flux reconcile helmrelease` ép chạy lại reconcile ngay, nhưng nếu chart/values **không đổi** so với release đang chạy thì helm-controller coi là no-op — không có `helm upgrade` nào chạy, không có Event mới, không có Slack alert.
 - Version chart không tồn tại trên registry → Flux **không** áp version lỗi lên cluster. Nó dừng ở bước pull chart (`HelmChart` object fail, `Ready=False reason=SourceNotReady`), release cũ trong cluster vẫn chạy nguyên, an toàn (fail-closed).
