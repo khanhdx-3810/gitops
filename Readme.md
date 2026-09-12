@@ -103,7 +103,8 @@ flux reconcile kustomization infrastructure --with-source
 flux reconcile kustomization infrastructure-shared --with-source
 
 # HelmRelease (chỉ hiệu quả nếu chart/values thực sự đổi, xem mục 6)
-flux reconcile helmrelease demo-api -n production
+flux reconcile helmrelease demo-api -n production              # chart CŨ
+flux reconcile helmrelease demo-api -n production --with-source # hỏi lại registry
 flux reconcile helmrelease demo-api -n staging
 
 # Image automation pipeline (ImageRepository -> ImagePolicy -> ImageUpdateAutomation)
@@ -112,29 +113,85 @@ flux reconcile image policy web-api-production -n flux-system
 flux reconcile image policy web-api-staging -n flux-system
 flux reconcile image update web-api-production -n flux-system
 flux reconcile image update web-api-staging -n flux-system
+
+# Lấy lại chart mới nhất
+flux reconcile source chart production-demo-api -n flux-system
 ```
 
-## 5. Xem log
+## 5. Xem log và debug
 
-```bash
-# Cách nhanh nhất: flux CLI tự lọc log theo object (mọi controller)
-flux logs --kind=HelmRelease --name=demo-api --namespace=production
-flux logs --kind=Kustomization --name=infrastructure
-flux logs --all-namespaces           # tail toàn bộ log Flux, mọi controller
+### 5.1 6 controller làm gì
 
-# Hoặc lấy trực tiếp log của từng controller
-kubectl logs -n flux-system -l app=helm-controller --tail=100 -f
-kubectl logs -n flux-system -l app=source-controller --tail=100 -f          # chart/git pull
-kubectl logs -n flux-system -l app=kustomize-controller --tail=100 -f
-kubectl logs -n flux-system -l app=notification-controller --tail=100 -f   # debug vì sao Slack không nhận alert
-kubectl logs -n flux-system -l app=image-reflector-controller --tail=100 -f # ImageRepository/ImagePolicy
-kubectl logs -n flux-system -l app=image-automation-controller --tail=100 -f # ImageUpdateAutomation
+| Controller | Quản lý CRD | Log có gì | Xem khi nào |
+|---|---|---|---|
+| `source-controller` | `GitRepository`, `HelmRepository`, `OCIRepository`, `HelmChart` | Clone Git, tải chart, tạo Artifact, lỗi xác thực | Repo không kéo được, chart không tải được, sai credential |
+| `kustomize-controller` | `Kustomization` | Build Kustomize, apply, prune, giải mã SOPS, health check | `kustomize build failed`, object không apply, Secret ra `ENC[...]` |
+| `helm-controller` | `HelmRelease` | `helm install/upgrade/rollback`, drift detection, remediation | Upgrade thất bại, rollback tự động, drift |
+| `notification-controller` | `Provider`, `Alert`, `Receiver` | Gửi Slack, nhận webhook, xác minh chữ ký | Slack không nhận tin, webhook trả 401/404 |
+| `image-reflector-controller` | `ImageRepository`, `ImagePolicy` | Quét registry, lọc tag, chọn tag | `unauthorized to list tags`, policy chọn sai tag |
+| `image-automation-controller` | `ImageUpdateAutomation` | Tìm marker, sửa file, commit, push | Không commit gì, `permission denied` khi push |
 
-# Xem điều kiện (Ready/Released/Drifted...) + Event gần nhất của 1 HelmRelease
-kubectl describe helmrelease demo-api -n production
-kubectl get events -n production --sort-by=.lastTimestamp
-```
+### 5.2 Lệnh xem log
 
+| Lệnh | Dùng khi |
+|---|---|
+| `flux logs --kind=HelmRelease --name=demo-api -n production` | Lọc log theo đúng một object — **cách nhanh nhất** |
+| `flux logs --level=error --since=15m` | Chỉ xem lỗi gần đây |
+| `flux logs --follow --tail=200` | Theo dõi liên tục, mọi controller |
+| `flux logs --all-namespaces` | Khi có Flux ở nhiều namespace |
+| `kubectl -n flux-system logs deploy/<controller> --tail=100 -f` | Xem thô log một controller cụ thể |
+
+> `flux logs` mặc định chỉ lấy 10 dòng cuối mỗi controller — nhớ thêm `--tail` nếu thấy trống.
+
+### 5.3 Log từng controller
+
+| Controller | Lệnh |
+|---|---|
+| source | `kubectl -n flux-system logs deploy/source-controller --tail=100 -f` |
+| kustomize | `kubectl -n flux-system logs deploy/kustomize-controller --tail=100 -f` |
+| helm | `kubectl -n flux-system logs deploy/helm-controller --tail=100 -f` |
+| notification | `kubectl -n flux-system logs deploy/notification-controller --tail=100 -f` |
+| image-reflector | `kubectl -n flux-system logs deploy/image-reflector-controller --tail=100 -f` |
+| image-automation | `kubectl -n flux-system logs deploy/image-automation-controller --tail=100 -f` |
+
+### 5.4 Xem trạng thái và event của một object
+
+| Lệnh | Cho biết |
+|---|---|
+| `flux get all -A --status-selector ready=false` | **Chạy đầu tiên** — cái gì đang lỗi |
+| `kubectl describe helmrelease demo-api -n production` | Điều kiện Ready/Released/Drifted + event gần nhất |
+| `flux events --for HelmRelease/demo-api -n production` | Dòng thời gian của một object |
+| `kubectl get events -n production --sort-by=.lastTimestamp` | Mọi event trong namespace |
+| `flux trace deployment demo-api -n production` | Object này do ai tạo, từ chart/commit nào |
+| `flux tree helmrelease demo-api -n production` | `HelmRelease` này quản lý những object nào |
+
+### 5.5 Chọn controller theo triệu chứng
+
+| Triệu chứng | Xem log |
+|---|---|
+| `flux get sources git` đỏ | `source-controller` |
+| `no chart version found` | `source-controller` |
+| `kustomize build failed` | `kustomize-controller` |
+| Secret ra `ENC[...]` thay vì giá trị thật | `kustomize-controller` |
+| `HelmRelease` kẹt `InProgress`, hoặc tự rollback | `helm-controller` |
+| Sửa tay không bị ghi đè | `helm-controller` |
+| Slack im lặng | `notification-controller` |
+| Webhook GitHub trả 401/404 | `notification-controller` |
+| Push tag mới mà `flux get images policy` không đổi | `image-reflector-controller` |
+| Policy chọn đúng tag nhưng không có commit nào | `image-automation-controller` |
+
+### 5.6 Quy trình debug theo chặng
+
+Đi từ trên xuống, tìm chặng **đầu tiên** đứt.
+
+| # | Chặng | Lệnh kiểm tra |
+|---|---|---|
+| 1 | Tổng quan | `flux get all -A --status-selector ready=false` |
+| 2 | Repo về chưa | `flux get sources git` (so với `git rev-parse --short HEAD`) |
+| 3 | Chart về chưa | `flux get sources helm` và `flux get sources chart` |
+| 4 | Manifest apply chưa | `flux get kustomizations` |
+| 5 | Helm chạy chưa | `flux get helmreleases -A` |
+| 6 | Pod chạy chưa | `kubectl -n <ns> get pod` và `describe pod` |
 ## 6. GitHub Actions — PR tự động cho image update
 
 `.github/workflows/image-update-pr.yml` chạy khi có push lên branch `flux-image-updates`
