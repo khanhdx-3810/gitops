@@ -17,5 +17,9 @@ spec:
 
   - kind: ImageUpdateAutomation
     name: '*'
+
+  - kind: HelmChart
+    name: '*'
+    namespace: 'flux-system'
   providerRef:
     name: slack
